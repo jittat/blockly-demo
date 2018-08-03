@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <div id="blocklyDiv" style="height: 500px; width: 800px;">
+    </div>
+    <br />
+    <button onclick="generateCode()">Code</button>
+    <button onclick="runCode()">Run</button>
+
+    <xml id="toolbox" style="display: none">
+      <block type="controls_if"></block>
+      <block type="controls_repeat_ext"></block>
+      <block type="logic_compare"></block>
+      <block type="math_number"></block>
+      <block type="math_arithmetic"></block>
+      <block type="text"></block>
+      <block type="text_print"></block>
+    </xml>
+    
+    <script src="../lib/blockly/blockly_compressed.js"></script>
+    <script src="../lib/blockly/blocks_compressed.js"></script>
+    <script src="../lib/blockly/msg/js/th.js"></script>
+    <script src="../lib/blockly/javascript_compressed.js"></script>
+    <script>
+      var workspace = Blockly.inject('blocklyDiv',
+                                     {toolbox: document.getElementById('toolbox')});
+
+      function generateCode() {
+        var code = Blockly.JavaScript.workspaceToCode(workspace);
+        alert(code);
+      }
+
+      function runCode() {
+        var code = Blockly.JavaScript.workspaceToCode(workspace);
+        eval(code);
+      }
+    </script>
+  </body>
+</html>
