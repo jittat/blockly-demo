@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <div id="blocklyDiv" style="height: 500px; width: 800px;">
+    </div>
+    <br />
+    <button onclick="generateCode()">Code</button>
+    <button onclick="runCode()">Run</button><br />
+    Temp: <input id="tempId" value="0"/><br />
+    Light status: <span id="lightStatusId">UNKNOWN</span>
+
+    <xml id="toolbox" style="display: none;">
+      <category name="Environment">
+        <block type="temperature"></block>
+        <block type="light_control">
+          <field name="ctrl">ON</field>
+        </block>
+      </category>
+      <category name="Basic">
+        <block type="logic_compare">
+          <field name="OP">EQ</field>
+        </block>
+        <block type="text">
+          <field name="TEXT"></field>
+        </block>
+        <block type="controls_if"></block>
+        <block type="math_number">
+          <field name="NUM">0</field>
+        </block>
+        <block type="text_print">
+          <value name="TEXT">
+            <shadow type="text">
+              <field name="TEXT">abc</field>
+            </shadow>
+          </value>
+        </block>
+        <block type="math_arithmetic">
+          <field name="OP">ADD</field>
+          <value name="A">
+            <shadow type="math_number">
+              <field name="NUM">1</field>
+            </shadow>
+          </value>
+          <value name="B">
+            <shadow type="math_number">
+              <field name="NUM">1</field>
+            </shadow>
+          </value>
+        </block>
+      </category>
+      <category name="Variables" colour="#A65C81" custom="VARIABLE"></category>
+    </xml>
+    
+    <script src="../lib/blockly/blockly_compressed.js"></script>
+    <script src="../lib/blockly/blocks_compressed.js"></script>
+    <script src="../lib/blockly/msg/js/th.js"></script>
+    <script src="../lib/blockly/javascript_compressed.js"></script>
+    <script src="../lib/acorn/acorn_interpreter.js"></script>
+    
+    <script src="custom_blocks.js"></script>
+    <script>
+      var workspace = Blockly.inject('blocklyDiv',
+                                     {toolbox: document.getElementById('toolbox')});
+
+      function getTemperature() {
+        var tempInput = document.getElementById('tempId');
+        if(tempInput.value != '') {
+          return parseInt(tempInput.value, 10);
+        } else {
+          return 0;
+        }
+      }
+
+      function turnLightOn() {
+        var statusSpan = document.getElementById('lightStatusId');
+        statusSpan.innerHTML = 'On';
+      }
+
+      function turnLightOff() {
+        var statusSpan = document.getElementById('lightStatusId');
+        statusSpan.innerHTML = 'Off';
+      }
+      
+      function generateCode() {
+        var code = Blockly.JavaScript.workspaceToCode(workspace);
+        alert(code);
+      }
+
+      function highlightBlock(id) {
+        workspace.highlightBlock(id);
+      }
+
+      function addSimpleWrapper(interpreter, scope,
+                                function_name, f) {
+        var wrapper = function() {
+          return f();
+        }
+        interpreter.setProperty(scope, function_name,
+                                interpreter.createNativeFunction(wrapper));
+      }
+      
+      function initApi(interpreter, scope) {
+        var wrapper = function(text) {
+          return alert(arguments.length ? text : '');
+        };
+        interpreter.setProperty(scope, 'alert',
+                                interpreter.createNativeFunction(wrapper));
+
+        wrapper = function(text) {
+          return prompt(text);
+        };
+        interpreter.setProperty(scope, 'prompt',
+                                interpreter.createNativeFunction(wrapper));
+        
+        wrapper = function(id) {
+          return workspace.highlightBlock(id);
+        };
+        interpreter.setProperty(scope, 'highlightBlock',
+                                interpreter.createNativeFunction(wrapper));
+
+        addSimpleWrapper(interpreter, scope,
+                         'getTemperature', getTemperature);
+        addSimpleWrapper(interpreter, scope,
+                         'turnLightOn', turnLightOn);
+        addSimpleWrapper(interpreter, scope,
+                         'turnLightOff', turnLightOff);
+      }
+      
+      function runCode() {
+        var code = Blockly.JavaScript.workspaceToCode(workspace);
+        var interpreter = new Interpreter(code, initApi);
+
+        function nextStep() {
+          if (interpreter.step()) {
+            window.setTimeout(nextStep, 10);
+          }
+        }
+        nextStep();
+      }
+    </script>
+  </body>
+</html>

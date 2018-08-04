@@ -59,3 +59,7 @@ Blockly.JavaScript['light_control'] = function(block) {
   }
   return code;
 };
+
+Blockly.JavaScript.STATEMENT_PREFIX = 'highlightBlock(%1);\n';
+Blockly.JavaScript.addReservedWords('highlightBlock');
+
